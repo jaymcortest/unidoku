@@ -16,4 +16,12 @@ features = [
   'HtmlElement',
   'Node',
   'Window',
+  'CssStyleDeclaration',
+  'HtmlDivElement',
+  'NodeList',
+  'HtmlInputElement',
+  'InputEvent',
+  'EventTarget',
+  'HtmlButtonElement',
+  'MouseEvent',
 ]
