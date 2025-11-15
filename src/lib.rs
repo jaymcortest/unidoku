@@ -92,12 +92,7 @@ impl Sudoku {
 #[wasm_bindgen(start)]
 pub fn main() -> Result<(), JsValue> {
     let doc = document();
-    let body = doc.body().unwrap();
-
-    // Create a main container for the game
-    let game_container = doc.create_element("div")?;
-    game_container.set_id("game-container");
-    body.append_child(&game_container)?;
+    let game_container = doc.get_element_by_id("game-container").unwrap();
 
     let sudoku = Rc::new(RefCell::new(Sudoku::new()));
     sudoku.borrow_mut().render(&game_container);
