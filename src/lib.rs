@@ -100,7 +100,7 @@ pub fn main() -> Result<(), JsValue> {
     body.append_child(&game_container)?;
 
     let sudoku = Rc::new(RefCell::new(Sudoku::new()));
-    sudoku.borrow_mut().render(&game_container)?;
+    sudoku.borrow_mut().render(&game_container);
 
     // --- Event listener for Check button ---
     let check_btn = doc.get_element_by_id("check-btn").unwrap().dyn_into::<HtmlButtonElement>()?;
