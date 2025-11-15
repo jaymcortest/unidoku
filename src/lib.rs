@@ -91,6 +91,8 @@ impl Sudoku {
 
 #[wasm_bindgen(start)]
 pub fn main() -> Result<(), JsValue> {
+    console_error_panic_hook::set_once();
+
     let doc = document();
     let game_container = doc.get_element_by_id("game-container").unwrap();
 
