@@ -26,7 +26,7 @@ jobs:
         run: |
           wasm-pack build --target web
           mkdir dist
-          cp -r pkg/* dist/
+          cp -r pkg dist/
           cp index.html index.js style.css manifest.json sw.js dist/
 
       - name: Deploy 🚀
