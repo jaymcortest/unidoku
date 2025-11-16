@@ -29,6 +29,9 @@ jobs:
           cp -r pkg dist/
           cp index.html index.js style.css manifest.json sw.js dist/
 
+      - name: Check dist directory contents
+        run: ls -R dist
+
       - name: Deploy 🚀
         uses: JamesIves/github-pages-deploy-action@v4
         with:
