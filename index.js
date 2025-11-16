@@ -1,4 +1,4 @@
-import init from './dist/pkg/unidoku.js';
+import init from './pkg/unidoku.js';
 
 async function run() {
   await init();
