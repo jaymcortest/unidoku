@@ -34,3 +34,15 @@ jobs:
         with:
           branch: gh-pages
           folder: dist
+
+  verify-deployment:
+    needs: build-and-deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout gh-pages branch
+        uses: actions/checkout@v3
+        with:
+          ref: gh-pages
+      
+      - name: List contents of gh-pages branch
+        run: ls -R
