@@ -101,25 +101,20 @@ impl Sudoku {
     }
 
     fn highlight_number(&self, num_to_highlight: u8) {
-        for cell_element in self.cells.iter() {
+        // The `cells` vector and `board` array are in the same order.
+        for (i, cell_element) in self.cells.iter().enumerate() {
+            // 1. Clear existing highlight
             let mut current_classes = cell_element.get_attribute("class").unwrap_or_default();
-            current_classes = current_classes.replace(" highlight", ""); // Remove highlight if present
+            current_classes = current_classes.replace(" highlight", "");
             cell_element.set_attribute("class", &current_classes).unwrap();
 
-            if num_to_highlight > 0 {
-                let cell_value = if let Ok(input) = cell_element.clone().dyn_into::<HtmlInputElement>() {
-                    input.value().parse::<u8>().unwrap_or(0)
-                } else {
-                    cell_element.text_content().unwrap_or_default().parse::<u8>().unwrap_or(0)
-                };
-
-                if cell_value == num_to_highlight {
-                    let mut new_classes = cell_element.get_attribute("class").unwrap_or_default();
-                    if !new_classes.contains("highlight") {
-                        new_classes.push_str(" highlight");
-                    }
-                    cell_element.set_attribute("class", &new_classes).unwrap();
+            // 2. Check if this cell's value from the board matches and add highlight
+            if num_to_highlight > 0 && self.board[i] == num_to_highlight {
+                let mut new_classes = cell_element.get_attribute("class").unwrap_or_default();
+                if !new_classes.contains("highlight") {
+                    new_classes.push_str(" highlight");
                 }
+                cell_element.set_attribute("class", &new_classes).unwrap();
             }
         }
     }
