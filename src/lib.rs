@@ -29,7 +29,8 @@ impl Sudoku {
         Sudoku { board, cells: vec![], closures: vec![], keypad_closures: vec![] }
     }
 
-    pub fn render(&mut self, container: &Element) {
+    // Render method is now private, called from main
+    fn render(&mut self, container: &Element, sudoku_rc_for_keypad: Rc<RefCell<Sudoku>>) {
         container.set_inner_html(""); // Clear previous board
         self.closures.clear();
         self.cells.clear();
@@ -73,26 +74,24 @@ impl Sudoku {
             board_container.append_child(&cell).unwrap();
         }
         container.append_child(&board_container).unwrap();
-        self.render_keypad();
+        self.render_keypad(sudoku_rc_for_keypad);
     }
 
-    fn render_keypad(&mut self) {
+    fn render_keypad(&mut self, sudoku_rc: Rc<RefCell<Sudoku>>) {
         self.keypad_closures.clear();
         let keypad_container = document().get_element_by_id("keypad-container").unwrap();
         keypad_container.set_inner_html("");
-
-        let sudoku_ptr = self as *mut Sudoku;
 
         for i in 1..=10 { // 1-9 for numbers, 10 for clear
             let num = if i > 9 { 0 } else { i };
             let btn = document().create_element("button").unwrap().dyn_into::<HtmlButtonElement>().unwrap();
             btn.set_attribute("class", "keypad-btn").unwrap();
-            btn.set_text_content(Some(if num == 0 { "C" } else { &num.to_string() }));
+            let btn_text = if num == 0 { "C".to_string() } else { num.to_string() };
+            btn.set_text_content(Some(&btn_text));
 
+            let sudoku_for_closure = Rc::clone(&sudoku_rc);
             let closure = Closure::wrap(Box::new(move |_: MouseEvent| {
-                unsafe {
-                    (*sudoku_ptr).highlight_number(num);
-                }
+                sudoku_for_closure.borrow().highlight_number(num);
             }) as Box<dyn FnMut(_)>);
 
             btn.add_event_listener_with_callback("click", closure.as_ref().unchecked_ref()).unwrap();
@@ -102,8 +101,10 @@ impl Sudoku {
     }
 
     fn highlight_number(&self, num_to_highlight: u8) {
-        for (i, cell_element) in self.cells.iter().enumerate() {
-            cell_element.class_list().remove_1("highlight").unwrap();
+        for cell_element in self.cells.iter() {
+            let mut current_classes = cell_element.get_attribute("class").unwrap_or_default();
+            current_classes = current_classes.replace(" highlight", ""); // Remove highlight if present
+            cell_element.set_attribute("class", &current_classes).unwrap();
 
             if num_to_highlight > 0 {
                 let cell_value = if let Ok(input) = cell_element.clone().dyn_into::<HtmlInputElement>() {
@@ -113,12 +114,17 @@ impl Sudoku {
                 };
 
                 if cell_value == num_to_highlight {
-                    cell_element.class_list().add_1("highlight").unwrap();
+                    let mut new_classes = cell_element.get_attribute("class").unwrap_or_default();
+                    if !new_classes.contains("highlight") {
+                        new_classes.push_str(" highlight");
+                    }
+                    cell_element.set_attribute("class", &new_classes).unwrap();
                 }
             }
         }
     }
 
+    #[wasm_bindgen] // This method is exposed to JS
     pub fn check_solution(&self) {
         let is_complete = !self.board.contains(&0);
         let message = if is_complete {
@@ -129,9 +135,10 @@ impl Sudoku {
         window().unwrap().alert_with_message(message).unwrap();
     }
 
-    pub fn new_game(&mut self, container: &Element) {
+    // New game method is now private, called from main
+    fn new_game(&mut self, _container: &Element, sudoku_rc_for_keypad: Rc<RefCell<Sudoku>>) {
         self.board = Sudoku::new().board;
-        self.render(container);
+        self.render(_container, sudoku_rc_for_keypad);
     }
 }
 
@@ -143,7 +150,7 @@ pub fn main() -> Result<(), JsValue> {
     let game_container = doc.get_element_by_id("game-container").unwrap();
 
     let sudoku = Rc::new(RefCell::new(Sudoku::new()));
-    sudoku.borrow_mut().render(&game_container);
+    sudoku.borrow_mut().render(&game_container, Rc::clone(&sudoku));
 
     // --- Event listener for Check button ---
     let check_btn = doc.get_element_by_id("check-btn").unwrap().dyn_into::<HtmlButtonElement>()?;
@@ -159,7 +166,7 @@ pub fn main() -> Result<(), JsValue> {
     let sudoku_for_new_game = Rc::clone(&sudoku);
     let new_game_closure = Closure::wrap(Box::new(move |_: MouseEvent| {
         let container = document().get_element_by_id("game-container").unwrap();
-        sudoku_for_new_game.borrow_mut().new_game(&container);
+        sudoku_for_new_game.borrow_mut().new_game(&container, Rc::clone(&sudoku_for_new_game));
     }) as Box<dyn FnMut(_)>);
     new_game_btn.add_event_listener_with_callback("click", new_game_closure.as_ref().unchecked_ref())?;
     new_game_closure.forget();
