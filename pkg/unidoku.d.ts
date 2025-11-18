@@ -6,8 +6,6 @@ export class Sudoku {
   [Symbol.dispose](): void;
   check_solution(): void;
   constructor();
-  render(container: Element): void;
-  new_game(container: Element): void;
 }
 
 export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
@@ -18,8 +16,6 @@ export interface InitOutput {
   readonly main: () => void;
   readonly sudoku_check_solution: (a: number) => void;
   readonly sudoku_new: () => number;
-  readonly sudoku_new_game: (a: number, b: any) => void;
-  readonly sudoku_render: (a: number, b: any) => void;
   readonly wasm_bindgen__convert__closures_____invoke__h3609c48714a532a2: (a: number, b: number, c: any) => void;
   readonly wasm_bindgen__closure__destroy__h0a77b1b88e11d55e: (a: number, b: number) => void;
   readonly __wbindgen_malloc: (a: number, b: number) => number;
